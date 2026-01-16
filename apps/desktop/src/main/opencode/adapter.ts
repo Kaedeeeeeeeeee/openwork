@@ -10,7 +10,7 @@ import {
 } from './cli-path';
 import { getAllApiKeys } from '../store/secureStorage';
 import { getSelectedModel } from '../store/appSettings';
-import { generateOpenCodeConfig, ACCOMPLISH_AGENT_NAME } from './config-generator';
+import { generateOpenCodeConfig, ACCOMPLISH_AGENT_NAME, syncApiKeysToOpenCodeAuth } from './config-generator';
 import { getExtendedNodePath } from '../utils/system-path';
 import { getBundledNodePaths, logBundledNodeInfo } from '../utils/bundled-node';
 import path from 'path';
@@ -103,6 +103,9 @@ export class OpenCodeAdapter extends EventEmitter<OpenCodeAdapterEvents> {
     this.streamParser.reset();
     this.hasCompleted = false;
     this.wasInterrupted = false;
+
+    // Sync API keys to OpenCode CLI's auth.json (for DeepSeek, Zhipu support)
+    await syncApiKeysToOpenCodeAuth();
 
     // Generate OpenCode config file with MCP settings and agent
     console.log('[OpenCode CLI] Generating OpenCode config with MCP settings and agent...');
@@ -377,6 +380,21 @@ export class OpenCodeAdapter extends EventEmitter<OpenCodeAdapterEvents> {
       env.GROQ_API_KEY = apiKeys.groq;
       console.log('[OpenCode CLI] Using Groq API key from settings');
     }
+    if (apiKeys.deepseek) {
+      env.DEEPSEEK_API_KEY = apiKeys.deepseek;
+      console.log('[OpenCode CLI] Using DeepSeek API key from settings');
+    }
+    // Note: Z.AI Coding Plan uses OpenCode CLI login (opencode auth login)
+    // No API key needed from Openwork - users authenticate directly in OpenCode
+
+    // Set DeepSeek API key as environment variable for OpenCode CLI
+    // Note: Z.AI Coding Plan doesn't need this - it uses OpenCode's built-in auth
+    const selectedModel = getSelectedModel();
+    if (selectedModel?.provider === 'deepseek' && apiKeys.deepseek) {
+      env.OPENAI_API_KEY = apiKeys.deepseek;
+      env.OPENAI_BASE_URL = 'https://api.deepseek.com';
+      console.log('[OpenCode CLI] Masquerading DeepSeek as OpenAI');
+    }
 
     // Log config environment variable
     console.log('[OpenCode CLI] OPENCODE_CONFIG in env:', process.env.OPENCODE_CONFIG);
@@ -409,7 +427,19 @@ export class OpenCodeAdapter extends EventEmitter<OpenCodeAdapterEvents> {
 
     // Add model selection if specified
     if (selectedModel?.model) {
-      args.push('--model', selectedModel.model);
+      if (selectedModel.provider === 'zai') {
+        // Z.AI Coding Plan uses 'zai-coding-plan' provider in OpenCode CLI
+        // Requires user to login via OpenCode CLI: opencode auth login
+        const modelId = selectedModel.model.split('/').pop();
+        args.push('--model', `zai-coding-plan/${modelId}`);
+      } else if (selectedModel.provider === 'deepseek') {
+        // DeepSeek uses 'deepseek' provider in OpenCode CLI
+        // API key synced to ~/.local/share/opencode/auth.json
+        const modelId = selectedModel.model.split('/').pop();
+        args.push('--model', `deepseek/${modelId}`);
+      } else {
+        args.push('--model', selectedModel.model);
+      }
     }
 
     // Resume session if specified

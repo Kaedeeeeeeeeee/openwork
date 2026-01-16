@@ -2,7 +2,7 @@
  * Provider and model configuration types for multi-provider support
  */
 
-export type ProviderType = 'anthropic' | 'openai' | 'google' | 'local' | 'custom';
+export type ProviderType = 'anthropic' | 'openai' | 'google' | 'groq' | 'deepseek' | 'zai' | 'local' | 'custom';
 
 export interface ProviderConfig {
   id: ProviderType;
@@ -101,6 +101,88 @@ export const DEFAULT_PROVIDERS: ProviderConfig[] = [
         fullId: 'google/gemini-3-flash-preview',
         contextWindow: 1000000,
         supportsVision: true,
+      },
+    ],
+  },
+  {
+    id: 'groq',
+    name: 'Groq',
+    requiresApiKey: true,
+    apiKeyEnvVar: 'GROQ_API_KEY',
+    models: [
+      {
+        id: 'llama3-70b-8192',
+        displayName: 'Llama 3 70B',
+        provider: 'groq',
+        fullId: 'groq/llama3-70b-8192',
+        contextWindow: 8192,
+        supportsVision: false,
+      },
+      {
+        id: 'mixtral-8x7b-32768',
+        displayName: 'Mixtral 8x7B',
+        provider: 'groq',
+        fullId: 'groq/mixtral-8x7b-32768',
+        contextWindow: 32768,
+        supportsVision: false,
+      },
+    ],
+  },
+  {
+    id: 'deepseek',
+    name: 'DeepSeek',
+    requiresApiKey: true,
+    apiKeyEnvVar: 'DEEPSEEK_API_KEY',
+    baseUrl: 'https://api.deepseek.com',
+    models: [
+      {
+        id: 'deepseek-chat',
+        displayName: 'DeepSeek Chat (V3)',
+        provider: 'deepseek',
+        fullId: 'deepseek/deepseek-chat',
+        contextWindow: 64000,
+        supportsVision: false,
+      },
+      {
+        id: 'deepseek-reasoner',
+        displayName: 'DeepSeek Reasoner (R1)',
+        provider: 'deepseek',
+        fullId: 'deepseek/deepseek-reasoner',
+        contextWindow: 64000,
+        supportsVision: false,
+      },
+    ],
+  },
+  {
+    id: 'zai',
+    name: 'Z.AI Coding Plan',
+    requiresApiKey: true,
+    apiKeyEnvVar: 'ZAI_API_KEY',
+    baseUrl: 'https://api.z.ai', // Z.AI uses OpenCode's built-in integration
+    models: [
+      {
+        id: 'glm-4.7',
+        displayName: 'GLM-4.7 (Latest)',
+        provider: 'zai',
+        fullId: 'zai/glm-4.7',
+        contextWindow: 200000,
+        supportsVision: false,
+      },
+      {
+        id: 'glm-4.6',
+        displayName: 'GLM-4.6',
+        provider: 'zai',
+        fullId: 'zai/glm-4.6',
+        contextWindow: 200000,
+        supportsVision: false,
+      },
+      {
+        id: 'glm-4.5-flash',
+        displayName: 'GLM-4.5 Flash',
+        provider: 'zai',
+        fullId: 'zai/glm-4.5-flash',
+        contextWindow: 128000,
+        supportsVision: false,
       },
     ],
   },

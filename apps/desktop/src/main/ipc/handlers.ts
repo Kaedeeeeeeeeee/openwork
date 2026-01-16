@@ -71,7 +71,7 @@ import {
 } from '../test-utils/mock-task-flow';
 
 const MAX_TEXT_LENGTH = 8000;
-const ALLOWED_API_KEY_PROVIDERS = new Set(['anthropic', 'openai', 'google', 'groq', 'custom']);
+const ALLOWED_API_KEY_PROVIDERS = new Set(['anthropic', 'openai', 'google', 'groq', 'deepseek', 'zai', 'custom']);
 const API_KEY_VALIDATION_TIMEOUT_MS = 15000;
 
 /**
@@ -830,6 +830,21 @@ export function registerIPCHandlers(): void {
             API_KEY_VALIDATION_TIMEOUT_MS
           );
           break;
+
+        case 'deepseek':
+          response = await fetchWithTimeout(
+            'https://api.deepseek.com/models',
+            {
+              method: 'GET',
+              headers: {
+                'Authorization': `Bearer ${sanitizedKey}`,
+              },
+            },
+            API_KEY_VALIDATION_TIMEOUT_MS
+          );
+          break;
+
+        // Note: Z.AI Coding Plan uses OpenCode CLI login, no API key validation needed
 
         default:
           // For 'custom' provider, skip validation

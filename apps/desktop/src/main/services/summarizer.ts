@@ -20,7 +20,8 @@ Task: `;
  */
 export async function generateTaskSummary(prompt: string): Promise<string> {
   // Try providers in order of preference
-  const providers: ApiKeyProvider[] = ['anthropic', 'openai', 'google', 'groq'];
+  // Note: Z.AI Coding Plan is not included as it doesn't provide API key for direct calls
+  const providers: ApiKeyProvider[] = ['anthropic', 'openai', 'google', 'groq', 'deepseek'];
 
   for (const provider of providers) {
     const apiKey = getApiKey(provider);
@@ -57,6 +58,8 @@ async function callProvider(
       return callGoogle(apiKey, prompt);
     case 'groq':
       return callGroq(apiKey, prompt);
+    case 'deepseek':
+      return callDeepSeek(apiKey, prompt);
     default:
       return null;
   }
@@ -176,6 +179,66 @@ async function callGroq(apiKey: string, prompt: string): Promise<string> {
 
   if (!response.ok) {
     throw new Error(`Groq API error: ${response.status}`);
+  }
+
+  const data = (await response.json()) as {
+    choices: Array<{ message: { content: string } }>;
+  };
+  const text = data.choices?.[0]?.message?.content;
+  return cleanSummary(text || '');
+}
+
+async function callDeepSeek(apiKey: string, prompt: string): Promise<string> {
+  const response = await fetch('https://api.deepseek.com/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: 'deepseek-chat',
+      max_tokens: 50,
+      messages: [
+        {
+          role: 'user',
+          content: SUMMARY_PROMPT + prompt,
+        },
+      ],
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`DeepSeek API error: ${response.status}`);
+  }
+
+  const data = (await response.json()) as {
+    choices: Array<{ message: { content: string } }>;
+  };
+  const text = data.choices?.[0]?.message?.content;
+  return cleanSummary(text || '');
+}
+
+async function callZhipu(apiKey: string, prompt: string): Promise<string> {
+  const response = await fetch('https://open.bigmodel.cn/api/paas/v4/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: 'glm-4-flash',
+      max_tokens: 50,
+      messages: [
+        {
+          role: 'user',
+          content: SUMMARY_PROMPT + prompt,
+        },
+      ],
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Zhipu API error: ${response.status}`);
   }
 
   const data = (await response.json()) as {

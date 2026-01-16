@@ -25,12 +25,13 @@ const API_KEY_PROVIDERS = [
   { id: 'anthropic', name: 'Anthropic', prefix: 'sk-ant-', placeholder: 'sk-ant-...' },
   { id: 'openai', name: 'OpenAI', prefix: 'sk-', placeholder: 'sk-...' },
   { id: 'google', name: 'Google AI', prefix: 'AIza', placeholder: 'AIza...' },
+  { id: 'groq', name: 'Groq', prefix: 'gsk_', placeholder: 'gsk_...' },
+  { id: 'deepseek', name: 'DeepSeek', prefix: 'sk-', placeholder: 'sk-...' },
+  { id: 'zai', name: 'Z.AI Coding Plan', prefix: '', placeholder: 'Your Z.AI API key...' },
 ] as const;
 
 // Coming soon providers (displayed but not selectable)
-const COMING_SOON_PROVIDERS = [
-  { id: 'groq', name: 'Groq' },
-] as const;
+const COMING_SOON_PROVIDERS = [] as const;
 
 type ProviderId = typeof API_KEY_PROVIDERS[number]['id'];
 
@@ -269,24 +270,15 @@ export default function SettingsDialog({ open, onOpenChange, onApiKeySaved }: Se
                         analytics.trackSelectProvider(p.name);
                         setProvider(p.id);
                       }}
-                      className={`rounded-xl border p-4 text-center transition-all duration-200 ease-accomplish ${
-                        provider === p.id
-                          ? 'border-primary bg-muted'
-                          : 'border-border hover:border-ring'
-                      }`}
+                      className={`rounded-xl border p-4 text-center transition-all duration-200 ease-accomplish ${provider === p.id
+                        ? 'border-primary bg-muted'
+                        : 'border-border hover:border-ring'
+                        }`}
                     >
                       <div className="font-medium text-foreground">{p.name}</div>
                     </button>
                   ))}
-                  {COMING_SOON_PROVIDERS.map((p) => (
-                    <div
-                      key={p.id}
-                      className="rounded-xl border border-dashed border-muted-foreground/30 p-4 text-center opacity-60 cursor-not-allowed"
-                    >
-                      <div className="font-medium text-muted-foreground">{p.name}</div>
-                      <div className="text-xs text-muted-foreground/70 mt-1">Coming Soon</div>
-                    </div>
-                  ))}
+
                 </div>
               </div>
 
@@ -406,14 +398,12 @@ export default function SettingsDialog({ open, onOpenChange, onApiKeySaved }: Se
                     <button
                       data-testid="settings-debug-toggle"
                       onClick={handleDebugToggle}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ease-accomplish ${
-                        debugMode ? 'bg-primary' : 'bg-muted'
-                      }`}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ease-accomplish ${debugMode ? 'bg-primary' : 'bg-muted'
+                        }`}
                     >
                       <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform duration-200 ease-accomplish ${
-                          debugMode ? 'translate-x-6' : 'translate-x-1'
-                        }`}
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform duration-200 ease-accomplish ${debugMode ? 'translate-x-6' : 'translate-x-1'
+                          }`}
                       />
                     </button>
                   )}
@@ -446,10 +436,10 @@ export default function SettingsDialog({ open, onOpenChange, onApiKeySaved }: Se
                 </div>
               </div>
               <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
-              Openwork is a local computer-use AI agent for your Mac that reads your files, creates documents, and automates repetitive knowledge work—all open-source with your AI models of choice.
+                Openwork is a local computer-use AI agent for your Mac that reads your files, creates documents, and automates repetitive knowledge work—all open-source with your AI models of choice.
               </p>
               <p className="mt-3 text-sm text-muted-foreground">
-              Any questions or feedback? <a href="mailto:openwork-support@accomplish.ai" className="text-primary hover:underline">Click here to contact us</a>.
+                Any questions or feedback? <a href="mailto:openwork-support@accomplish.ai" className="text-primary hover:underline">Click here to contact us</a>.
               </p>
             </div>
           </section>
