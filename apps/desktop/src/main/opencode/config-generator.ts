@@ -5,6 +5,7 @@ import { PERMISSION_API_PORT, QUESTION_API_PORT } from '../permission-api';
 import { getOllamaConfig } from '../store/appSettings';
 import { getApiKey } from '../store/secureStorage';
 import { getProviderSettings, getActiveProviderModel, getConnectedProviderIds } from '../store/providerSettings';
+import { getEnabledMcpServers } from '../store/mcpServers';
 import type { BedrockCredentials, ProviderId } from '@accomplish/shared';
 
 /**
@@ -641,6 +642,30 @@ export async function generateOpenCodeConfig(): Promise<string> {
       },
     },
   };
+
+  // Add user-configured MCP servers
+  const userMcpServers = getEnabledMcpServers();
+  for (const server of userMcpServers) {
+    // Build environment object from McpEnvVar array
+    const envObject: Record<string, string> = {};
+    if (server.environment) {
+      for (const envVar of server.environment) {
+        if (envVar.key && envVar.value) {
+          envObject[envVar.key] = envVar.value;
+        }
+      }
+    }
+
+    config.mcp![server.id] = {
+      type: server.type,
+      command: server.command,
+      url: server.url,
+      enabled: server.enabled,
+      environment: Object.keys(envObject).length > 0 ? envObject : undefined,
+      timeout: server.timeout || 30000,
+    };
+    console.log('[OpenCode Config] Added user MCP server:', server.id, server.name);
+  }
 
   // Write config file
   const configJson = JSON.stringify(config, null, 2);

@@ -214,6 +214,20 @@ const accomplishAPI = {
     return () => ipcRenderer.removeListener('task:summary', listener);
   },
 
+  // MCP Servers Management
+  listMcpServers: (): Promise<unknown[]> =>
+    ipcRenderer.invoke('mcp-servers:list'),
+  getMcpServer: (id: string): Promise<unknown> =>
+    ipcRenderer.invoke('mcp-servers:get', id),
+  addMcpServer: (server: unknown): Promise<unknown> =>
+    ipcRenderer.invoke('mcp-servers:add', server),
+  updateMcpServer: (id: string, updates: unknown): Promise<void> =>
+    ipcRenderer.invoke('mcp-servers:update', id, updates),
+  removeMcpServer: (id: string): Promise<void> =>
+    ipcRenderer.invoke('mcp-servers:remove', id),
+  toggleMcpServer: (id: string, enabled: boolean): Promise<void> =>
+    ipcRenderer.invoke('mcp-servers:toggle', id, enabled),
+
   logEvent: (payload: { level?: string; message: string; context?: Record<string, unknown> }) =>
     ipcRenderer.invoke('log:event', payload),
 };

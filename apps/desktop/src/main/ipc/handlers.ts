@@ -54,7 +54,15 @@ import {
   getProviderDebugMode,
   hasReadyProvider,
 } from '../store/providerSettings';
-import type { ProviderId, ConnectedProvider, BedrockCredentials } from '@accomplish/shared';
+import {
+  getMcpServers,
+  getMcpServer,
+  addMcpServer,
+  updateMcpServer,
+  removeMcpServer,
+  toggleMcpServer,
+} from '../store/mcpServers';
+import type { ProviderId, ConnectedProvider, BedrockCredentials, McpServerConfig } from '@accomplish/shared';
 import { getDesktopConfig } from '../config';
 import {
   startPermissionApiServer,
@@ -1587,6 +1595,55 @@ export function registerIPCHandlers(): void {
 
   handle('provider-settings:get-debug', async () => {
     return getProviderDebugMode();
+  });
+
+  // MCP Servers Management
+  handle('mcp-servers:list', async () => {
+    return getMcpServers();
+  });
+
+  handle('mcp-servers:get', async (_event: IpcMainInvokeEvent, id: string) => {
+    const sanitizedId = sanitizeString(id, 'id', 128);
+    return getMcpServer(sanitizedId);
+  });
+
+  handle('mcp-servers:add', async (_event: IpcMainInvokeEvent, server: McpServerConfig) => {
+    // Validate required fields
+    if (!server.id || !server.name || !server.type) {
+      throw new Error('MCP server requires id, name, and type');
+    }
+
+    const sanitizedServer: McpServerConfig = {
+      id: sanitizeString(server.id, 'id', 128),
+      name: sanitizeString(server.name, 'name', 128),
+      description: server.description ? sanitizeString(server.description, 'description', 512) : undefined,
+      type: server.type,
+      command: server.command,
+      url: server.url,
+      enabled: server.enabled ?? true,
+      environment: server.environment,
+      timeout: server.timeout,
+      icon: server.icon,
+      templateId: server.templateId,
+    };
+
+    addMcpServer(sanitizedServer);
+    return sanitizedServer;
+  });
+
+  handle('mcp-servers:update', async (_event: IpcMainInvokeEvent, id: string, updates: Partial<McpServerConfig>) => {
+    const sanitizedId = sanitizeString(id, 'id', 128);
+    updateMcpServer(sanitizedId, updates);
+  });
+
+  handle('mcp-servers:remove', async (_event: IpcMainInvokeEvent, id: string) => {
+    const sanitizedId = sanitizeString(id, 'id', 128);
+    removeMcpServer(sanitizedId);
+  });
+
+  handle('mcp-servers:toggle', async (_event: IpcMainInvokeEvent, id: string, enabled: boolean) => {
+    const sanitizedId = sanitizeString(id, 'id', 128);
+    toggleMcpServer(sanitizedId, enabled);
   });
 }
 

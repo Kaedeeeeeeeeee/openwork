@@ -16,6 +16,7 @@ import { hasAnyReadyProvider, isProviderReady } from '@accomplish/shared';
 import { useProviderSettings } from '@/components/settings/hooks/useProviderSettings';
 import { ProviderGrid } from '@/components/settings/ProviderGrid';
 import { ProviderSettingsPanel } from '@/components/settings/ProviderSettingsPanel';
+import { McpServersPanel } from '@/components/settings/McpServersPanel';
 
 // First 4 providers shown in collapsed view (matches PROVIDER_ORDER in ProviderGrid)
 const FIRST_FOUR_PROVIDERS: ProviderId[] = ['anthropic', 'openai', 'google', 'bedrock'];
@@ -31,6 +32,7 @@ export default function SettingsDialog({ open, onOpenChange, onApiKeySaved }: Se
   const [gridExpanded, setGridExpanded] = useState(false);
   const [closeWarning, setCloseWarning] = useState(false);
   const [showModelError, setShowModelError] = useState(false);
+  const [showMcpServers, setShowMcpServers] = useState(false);
 
   const {
     settings,
@@ -344,6 +346,53 @@ export default function SettingsDialog({ open, onOpenChange, onApiKeySaved }: Se
                       </p>
                     </div>
                   )}
+                </div>
+              </motion.section>
+            )}
+          </AnimatePresence>
+
+          {/* MCP Servers Section - only shown when a provider is selected */}
+          <AnimatePresence>
+            {selectedProvider && !showMcpServers && (
+              <motion.section
+                variants={settingsVariants.slideDown}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                transition={{ ...settingsTransitions.enter, delay: 0.1 }}
+              >
+                <div className="rounded-lg border border-border bg-card p-5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <div className="font-medium text-foreground">MCP Servers</div>
+                      <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">
+                        Add API-based tools like Notion, GitHub for faster operations.
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setShowMcpServers(true)}
+                      className="ml-4 rounded-md bg-muted px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted/80"
+                    >
+                      Manage
+                    </button>
+                  </div>
+                </div>
+              </motion.section>
+            )}
+          </AnimatePresence>
+
+          {/* MCP Servers Panel */}
+          <AnimatePresence>
+            {showMcpServers && (
+              <motion.section
+                variants={settingsVariants.slideDown}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                transition={settingsTransitions.enter}
+              >
+                <div className="rounded-lg border border-border bg-card p-5">
+                  <McpServersPanel onClose={() => setShowMcpServers(false)} />
                 </div>
               </motion.section>
             )}
